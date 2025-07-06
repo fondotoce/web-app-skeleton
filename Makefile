@@ -1,18 +1,24 @@
-PROJECT_NAME=blockchain
+PROJECT_NAME=web-skeleton
+
 API_IMAGE_NAME=api
 API_PATH=api
+
+APP_IMAGE_NAME=api
+APP_PATH=api
+
 FRONTEND_IMAGE_NAME=web-interface
 FRONTEND_PATH=web-interface
 
-APP_PHP_CLI=api-php-cli
+API_PHP_CLI=api-php-cli
+APP_PHP_CLI=app-php-cli
 APP_NODE_CLI=web-interface-node-cli
 
 init: init-ci frontend-ready
 
 init-ci: docker-down-clear \
-	api-clear frontend-clear \
+	api-clear app-clear frontend-clear \
 	docker-pull docker-build docker-up \
-	api-init frontend-init
+	api-init app-init frontend-init
 
 up: docker-up
 down: docker-down
@@ -50,26 +56,26 @@ docker-ps:
 api-clear:
 	docker run --rm -v ${PWD}/${API_PATH}:/app -w /app alpine sh -c 'rm -rf var/cache/* var/log/* var/test/*'
 
-api-init:
-	echo 1
+api-init: api-deps-install api-wait-db
 
 api-permission:
 	docker run --rm -v ${PWD}/${API_PATH}:/app -w /app alpine chmod 777 var/cache var/log var/test
 
 api-deps-install:
-	docker compose run --rm ${APP_PHP_CLI} composer install
+	docker compose run --rm ${API_PHP_CLI} composer install
 
 api-deps-update:
-	docker compose run --rm ${APP_PHP_CLI} composer update
+	docker compose run --rm ${API_PHP_CLI} composer update
 
 api-wait-db:
-	docker compose run --rm ${APP_PHP_CLI} wait-for-it api-mysql:3306 -t 30
+	docker compose run --rm ${API_PHP_CLI} wait-for-it api-mysql:3306 -t 30
 
 api-migrations:
-	docker compose run --rm ${APP_PHP_CLI} composer app migrations:migrate -- --no-interaction
+	docker compose run --rm ${API_PHP_CLI} php ./bin/console migrations:migrate -- --no-interaction
+#	docker compose run --rm ${API_PHP_CLI} composer app migrations:migrate -- --no-interaction
 
 api-fixtures:
-	docker compose run --rm ${APP_PHP_CLI} composer app fixtures:load
+	docker compose run --rm ${API_PHP_CLI} composer app fixtures:load
 
 api-backup:
 	docker compose run --rm api-mysql-backup
@@ -77,40 +83,113 @@ api-backup:
 api-check: api-validate-schema api-lint api-analyze api-test
 
 api-validate-schema:
-	docker compose run --rm ${APP_PHP_CLI} composer app orm:validate-schema -- -v
+	docker compose run --rm ${API_PHP_CLI} composer app orm:validate-schema -- -v
 
 api-lint:
+	docker compose run --rm ${API_PHP_CLI} composer lint
+	docker compose run --rm ${API_PHP_CLI} composer rector -- --dry-run
+	docker compose run --rm ${API_PHP_CLI} composer php-cs-fixer fix -- --dry-run --diff
+
+api-lint-fix:
+	docker compose run --rm ${API_PHP_CLI} composer rector
+	docker compose run --rm ${API_PHP_CLI} composer php-cs-fixer fix
+
+api-analyze:
+	docker compose run --rm ${API_PHP_CLI} composer psalm -- --no-diff
+
+api-analyze-diff:
+	docker compose run --rm ${API_PHP_CLI} composer psalm
+
+api-test:
+	docker compose run --rm ${API_PHP_CLI} composer test
+
+api-test-coverage:
+	docker compose run --rm ${API_PHP_CLI} composer test-coverage
+
+api-test-unit:
+	docker compose run --rm ${API_PHP_CLI} composer test -- --testsuite=unit
+
+api-test-unit-coverage:
+	docker compose run --rm ${API_PHP_CLI} composer test-coverage -- --testsuite=unit
+
+api-test-functional:
+	docker compose run --rm ${API_PHP_CLI} composer test -- --testsuite=functional
+
+api-test-functional-coverage:
+	docker compose run --rm ${API_PHP_CLI} composer test-coverage -- --testsuite=functional
+
+# !API
+
+##########
+## APP
+##########
+
+app-clear:
+	docker run --rm -v ${PWD}/${APP_PATH}:/app -w /app alpine sh -c 'rm -rf var/cache/* var/log/* var/test/*'
+
+app-init: app-wait-db
+
+app-permission:
+	docker run --rm -v ${PWD}/${APP_PATH}:/app -w /app alpine chmod 777 var/cache var/log var/test
+
+app-deps-install:
+	docker compose run --rm ${APP_PHP_CLI} composer install
+
+app-deps-update:
+	docker compose run --rm ${APP_PHP_CLI} composer update
+
+app-wait-db:
+	docker compose run --rm ${APP_PHP_CLI} wait-for-it api-mysql:3306 -t 30
+
+app-migrations:
+	docker compose run --rm ${APP_PHP_CLI} php ./bin/console migrations:migrate -- --no-interaction
+#	docker compose run --rm ${APP_PHP_CLI} composer app migrations:migrate -- --no-interaction
+
+app-fixtures:
+	docker compose run --rm ${APP_PHP_CLI} composer app fixtures:load
+
+app-backup:
+	docker compose run --rm app-mysql-backup
+
+app-check: app-validate-schema app-lint app-analyze app-test
+
+app-validate-schema:
+	docker compose run --rm ${APP_PHP_CLI} composer app orm:validate-schema -- -v
+
+app-lint:
 	docker compose run --rm ${APP_PHP_CLI} composer lint
 	docker compose run --rm ${APP_PHP_CLI} composer rector -- --dry-run
 	docker compose run --rm ${APP_PHP_CLI} composer php-cs-fixer fix -- --dry-run --diff
 
-api-lint-fix:
+app-lint-fix:
 	docker compose run --rm ${APP_PHP_CLI} composer rector
 	docker compose run --rm ${APP_PHP_CLI} composer php-cs-fixer fix
 
-api-analyze:
+app-analyze:
 	docker compose run --rm ${APP_PHP_CLI} composer psalm -- --no-diff
 
-api-analyze-diff:
+app-analyze-diff:
 	docker compose run --rm ${APP_PHP_CLI} composer psalm
 
-api-test:
+app-test:
 	docker compose run --rm ${APP_PHP_CLI} composer test
 
-api-test-coverage:
+app-test-coverage:
 	docker compose run --rm ${APP_PHP_CLI} composer test-coverage
 
-api-test-unit:
+app-test-unit:
 	docker compose run --rm ${APP_PHP_CLI} composer test -- --testsuite=unit
 
-api-test-unit-coverage:
+app-test-unit-coverage:
 	docker compose run --rm ${APP_PHP_CLI} composer test-coverage -- --testsuite=unit
 
-api-test-functional:
+app-test-functional:
 	docker compose run --rm ${APP_PHP_CLI} composer test -- --testsuite=functional
 
-api-test-functional-coverage:
+app-test-functional-coverage:
 	docker compose run --rm ${APP_PHP_CLI} composer test-coverage -- --testsuite=functional
+
+# !APP
 
 ##########
 ## Frontend
@@ -130,7 +209,7 @@ frontend-ready:
 	docker run --rm -v ${PWD}/${FRONTEND_PATH}:/app -w /app alpine touch .ready
 
 ##########
-## Build
+## Build API
 ##########
 build: build-frontend build-api
 
@@ -156,6 +235,34 @@ push-api:
 	docker push ${REGISTRY}/"${API_IMAGE_NAME}-php-fpm":${IMAGE_TAG}
 	docker push ${REGISTRY}/"${API_IMAGE_NAME}-php-cli":${IMAGE_TAG}
 	docker push ${REGISTRY}/"${API_IMAGE_NAME}-postgres-backup":${IMAGE_TAG}
+
+###########
+### Build APP
+###########
+#build: build-frontend build-api
+#
+#build-frontend:
+#	docker --log-level=debug build --pull --file=frontend/docker/production/nginx/Dockerfile --tag=${REGISTRY}/${FRONTEND_IMAGE_NAME}:${IMAGE_TAG} ${FRONTEND_PATH}
+#
+#build-api:
+#	docker --log-level=debug build --pull --file=api/docker/production/nginx/Dockerfile --tag=${REGISTRY}/"${API_IMAGE_NAME}-nginx":${IMAGE_TAG} ${API_PATH}
+#	docker --log-level=debug build --pull --file=api/docker/production/php-fpm/Dockerfile --tag=${REGISTRY}/"${API_IMAGE_NAME}-php-fpm":${IMAGE_TAG} ${API_PATH}
+#	docker --log-level=debug build --pull --file=api/docker/production/php-cli/Dockerfile --tag=${REGISTRY}/"${API_IMAGE_NAME}-php-cli":${IMAGE_TAG} ${API_PATH}
+#	docker --log-level=debug build --pull --file=api/common/postgres-backup/php-cli/Dockerfile --tag=${REGISTRY}/"${API_IMAGE_NAME}-postgres-backup":${IMAGE_TAG} ${API_PATH}
+#
+#try-build:
+#	REGISTRY=localhost IMAGE_TAG=0 make build
+#
+#push: push-frontend push-api
+#
+#push-frontend:
+#	docker push ${REGISTRY}/${FRONTEND_IMAGE_NAME}:${IMAGE_TAG}
+#
+#push-api:
+#	docker push ${REGISTRY}/"${API_IMAGE_NAME}-nginx":${IMAGE_TAG}
+#	docker push ${REGISTRY}/"${API_IMAGE_NAME}-php-fpm":${IMAGE_TAG}
+#	docker push ${REGISTRY}/"${API_IMAGE_NAME}-php-cli":${IMAGE_TAG}
+#	docker push ${REGISTRY}/"${API_IMAGE_NAME}-postgres-backup":${IMAGE_TAG}
 
 ##########
 ## Test
@@ -194,6 +301,9 @@ rollback:
 ###
 
 bash:
+	docker compose run --rm ${API_PHP_CLI} bash
+
+bash-app:
 	docker compose run --rm ${APP_PHP_CLI} bash
 
 node:

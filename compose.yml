@@ -65,6 +65,44 @@ services:
     volumes:
       - ./api:/app
 
+  app:
+    build:
+      context: backoffice/docker
+      dockerfile: development/nginx/Dockerfile
+    volumes:
+      - ./backoffice:/app
+    networks:
+      - default
+      - blockchain.dev
+    ports:
+      - "8009:80"
+    depends_on:
+      - app-php-fpm
+
+  app-php-fpm:
+    build:
+      context: backoffice/docker
+      dockerfile: development/php-fpm/Dockerfile
+#    environment:
+#      APP_ENV: dev
+#      APP_DEBUG: 1
+    networks:
+      - default
+    volumes:
+      - ./backoffice:/app
+
+  app-php-cli:
+    build:
+      context: backoffice/docker
+      dockerfile: development/php-cli/Dockerfile
+#    environment:
+#      APP_ENV: dev
+#      APP_DEBUG: 1
+    networks:
+      - default
+    volumes:
+      - ./backoffice:/app
+
   api-mysql:
     image: mysql:9.3
     environment:
