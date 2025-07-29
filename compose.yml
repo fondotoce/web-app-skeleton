@@ -4,7 +4,7 @@ services:
       context: web-interface/docker/development/nginx
     networks:
       - default
-      - blockchain.dev
+      - skeleton.dev
     ports:
       - "8080:80"
     volumes:
@@ -27,6 +27,62 @@ services:
     volumes:
       - ./web-interface:/app
 
+  web-interface-angular:
+    build:
+      context: web-interface-angular/docker/development/nginx
+    networks:
+      - default
+      - skeleton.dev
+    ports:
+      - "8081:80"
+    volumes:
+      - ./web-interface-angular:/app
+
+  web-interface-angular-node:
+    build:
+      context: web-interface-angular/docker/development/node
+    environment:
+      WDS_SOCKET_PORT: 0
+      REACT_APP_AUTH_URL: http://api.localhost
+    command: sh -c "until [ -f .ready ] ; do sleep 1 ; done && yarn start"
+    volumes:
+      - ./web-interface-angular:/app
+    tty: true
+
+  web-interface-angular-node-cli:
+    build:
+      context: web-interface-angular/docker/development/node
+    volumes:
+      - ./web-interface-angular:/app
+
+  web-interface-vuejs:
+    build:
+      context: web-interface-vuejs/docker/development/nginx
+    networks:
+      - default
+      - skeleton.dev
+    ports:
+      - "8082:80"
+    volumes:
+      - ./web-interface-vuejs:/app
+
+  web-interface-vuejs-node:
+    build:
+      context: web-interface-vuejs/docker/development/node
+    environment:
+      WDS_SOCKET_PORT: 0
+      REACT_APP_AUTH_URL: http://api.localhost
+    command: sh -c "until [ -f .ready ] ; do sleep 1 ; done && yarn start"
+    volumes:
+      - ./web-interface-vuejs:/app
+    tty: true
+
+  web-interface-vuejs-node-cli:
+    build:
+      context: web-interface-vuejs/docker/development/node
+    volumes:
+      - ./web-interface-vuejs:/app
+
   api:
     build:
       context: api/docker
@@ -35,7 +91,7 @@ services:
       - ./api:/app
     networks:
       - default
-      - blockchain.dev
+      - skeleton.dev
     ports:
       - "8008:80"
     depends_on:
@@ -73,7 +129,7 @@ services:
       - ./backoffice:/app
     networks:
       - default
-      - blockchain.dev
+      - skeleton.dev
     ports:
       - "8009:80"
     depends_on:
@@ -139,5 +195,5 @@ volumes:
   backup-storage:
 
 networks:
-  blockchain.dev:
-    name: blockchain.dev
+  skeleton.dev:
+    name: skeleton.dev

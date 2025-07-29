@@ -8,17 +8,23 @@ APP_PATH=api
 
 FRONTEND_IMAGE_NAME=web-interface
 FRONTEND_PATH=web-interface
+FRONTEND_ANGULAR_PATH=web-interface-angular
+FRONTEND_VUEJS_PATH=web-interface-vuejs
 
 API_PHP_CLI=api-php-cli
 APP_PHP_CLI=app-php-cli
 APP_NODE_CLI=web-interface-node-cli
+APP_NODE_ANGULAR_CLI=web-interface-angular-node-cli
+APP_NODE_VUEJS_CLI=web-interface-vuejs-node-cli
+
+EXTERNAL_NETWORK = skeleton.dev
 
 init: init-ci frontend-ready
 
 init-ci: docker-down-clear \
-	api-clear app-clear frontend-clear \
+	api-clear app-clear frontend-clear frontend-angular-clear frontend-vuejs-clear \
 	docker-pull docker-build docker-up \
-	api-init app-init frontend-init
+	api-init app-init frontend-init frontend-angular-init frontend-vuejs-init
 
 up: docker-up
 down: docker-down
@@ -49,6 +55,9 @@ docker-logs:
 
 docker-ps:
 	docker compose ps
+
+docker-network:
+	docker network create $(EXTERNAL_NETWORK) || true
 
 ##########
 ## API
@@ -209,6 +218,40 @@ frontend-ready:
 	docker run --rm -v ${PWD}/${FRONTEND_PATH}:/app -w /app alpine touch .ready
 
 ##########
+## Frontend Angular
+##########
+frontend-angular-clear:
+	docker run --rm -v ${PWD}/${FRONTEND_ANGULAR_PATH}:/app -w /app alpine sh -c 'rm -rf .ready build'
+
+frontend-angular-init: frontend-angular-deps-install
+
+frontend-angular-deps-install:
+	docker compose run --rm ${APP_NODE_ANGULAR_CLI} yarn install
+
+frontend-angular-deps-update:
+	docker compose run --rm ${APP_NODE_ANGULAR_CLI} yarn update
+
+frontend-angular-ready:
+	docker run --rm -v ${PWD}/${FRONTEND_ANGULAR_PATH}:/app -w /app alpine touch .ready
+
+##########
+## Frontend VueJs
+##########
+frontend-vuejs-clear:
+	docker run --rm -v ${PWD}/${FRONTEND_VUEJS_PATH}:/app -w /app alpine sh -c 'rm -rf .ready build'
+
+frontend-vuejs-init: frontend-vuejs-deps-install
+
+frontend-vuejs-deps-install:
+	docker compose run --rm ${APP_NODE_VUEJS_CLI} yarn install
+
+frontend-vuejs-deps-update:
+	docker compose run --rm ${APP_NODE_VUEJS_CLI} yarn update
+
+frontend-vuejs-ready:
+	docker run --rm -v ${PWD}/${FRONTEND_VUEJS_PATH}:/app -w /app alpine touch .ready
+
+##########
 ## Build API
 ##########
 build: build-frontend build-api
@@ -272,7 +315,7 @@ push-api:
 ## Deploy
 ##########
 deploy:
-	ssh -o StrictHostKeyChecking=no deploy@${HOST} -p ${PORT} 'docker network create --driver=overlay blockchain.net || true'
+	ssh -o StrictHostKeyChecking=no deploy@${HOST} -p ${PORT} 'docker network create --driver=overlay skeleton.net || true'
 	ssh -o StrictHostKeyChecking=no deploy@${HOST} -p ${PORT} 'rm -rf site_${BUILD_NUMBER} && mkdir site_${BUILD_NUMBER}'
 
 	envsubst < compose-prod.yml > compose-prod-env.yml
@@ -308,3 +351,9 @@ bash-app:
 
 node:
 	docker compose run --rm ${APP_NODE_CLI} bash
+
+node-angular:
+	docker compose run --rm ${APP_NODE_ANGULAR_CLI} bash
+
+node-vuejs:
+	docker compose run --rm ${APP_NODE_VUEJS_CLI} bash
