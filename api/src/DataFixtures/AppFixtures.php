@@ -1,0 +1,56 @@
+<?php
+
+namespace App\DataFixtures;
+
+use App\Entity\MicroPost;
+use App\Entity\User;
+use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+
+class AppFixtures extends Fixture
+{
+    public function __construct(
+        private UserPasswordHasherInterface $passwordHasher,
+    ) {}
+
+    public function load(ObjectManager $manager): void
+    {
+        $user1 = new User();
+        $user1->setEmail('test@test.com');
+        $user1->setPassword($this->passwordHasher->hashPassword(
+            $user1,
+            '12345678',
+        ));
+        $user2 = new User();
+        $user2->setEmail('test2@test.com');
+        $user2->setPassword($this->passwordHasher->hashPassword(
+            $user2,
+            '87654321',
+        ));
+        $manager->persist($user1);
+        $manager->persist($user2);
+        $microPost1 = new MicroPost();
+        $microPost1->setTitle('Welcome to Poland!');
+        $microPost1->setText('Welcome to Poland!');
+        $microPost1->setAuthor($user1);
+        $microPost1->setCreated(new \DateTime());
+        $manager->persist($microPost1);
+
+        $microPost2 = new MicroPost();
+        $microPost2->setTitle('Welcome to US!');
+        $microPost2->setText('Welcome to US!');
+        $microPost2->setAuthor($user1);
+        $microPost2->setCreated(new \DateTime());
+        $manager->persist($microPost2);
+
+        $microPost3 = new MicroPost();
+        $microPost3->setTitle('Welcome to Germany!');
+        $microPost3->setText('Welcome to Germany!');
+        $microPost3->setAuthor($user2);
+        $microPost3->setCreated(new \DateTime());
+        $manager->persist($microPost3);
+
+        $manager->flush();
+    }
+}

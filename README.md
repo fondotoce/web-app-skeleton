@@ -1,93 +1,63 @@
-# web-app-skeleton
+<p align="center"><a href="https://symfony.com" target="_blank">
+    <img src="https://symfony.com/logos/symfony_black_02.svg">
+</a></p>
 
+The [Symfony binary][1] is a must-have tool when developing Symfony applications
+on your local machine. It provides:
 
+* The best way to [create new Symfony applications][2];
+* A powerful [local web server][3] to develop your projects with support for [TLS certificates][4];
+* A tool to [check for security vulnerabilities][5];
+* Seamless integration with [Platform.sh][6].
 
-## Getting started
+Installation
+------------
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+Read the installation instructions on [symfony.com][7].
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+Signature Verification
+----------------------
 
-## Add your files
+Symfony binaries are signed using [cosign][8], which is part of [sigstore][9].
+Signatures can be verified as follows (OS and architecture omitted for clarity):
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
+```console
+$ COSIGN_EXPERIMENTAL=1 cosign verify-blob --signature symfony-cli.sig symfony-cli
+tlog entry verified with uuid: "2b7ca2bfb7ee09114a15d60761c2a0a8c97f07cc20c02e635a92ba137a08a6de" index: 1261963
+Verified OK
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/anatolii-semochko/web-app-skeleton.git
-git branch -M main
-git push -uf origin main
+
+The above uses the (currently experimental) [keyless signing][10] method.
+Alternatively, one can verify the signature by also providing the certificate:
+
+```console
+$ cosign verify-blob --cert symfony-cli.pem --signature symfony-cli.sig symfony-cli
+Verified OK
 ```
 
-## Integrate with your tools
+Security Issues
+---------------
 
-- [ ] [Set up project integrations](https://gitlab.com/anatolii-semochko/web-app-skeleton/-/settings/integrations)
+If you discover a security vulnerability, please follow our [disclosure procedure][11].
 
-## Collaborate with your team
+Sponsorship [<img src="https://assets.cloudsmith.media/images/cloudsmith-logo-light.svg" width="250" align="right" />](https://cloudsmith.io/)
+-----------
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+Package repository hosting is graciously provided by
+[cloudsmith](https://cloudsmith.io/). Cloudsmith is the only fully hosted,
+cloud-native, universal package management solution, that enables your
+organization to create, store and share packages in any format, to any place,
+with total confidence. We believe there’s a better way to manage software
+assets and packages, and they're making it happen!
 
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+[1]: https://symfony.com/download
+[2]: https://symfony.com/doc/current/setup.html#creating-symfony-applications
+[3]: https://symfony.com/doc/current/setup/symfony_server.html
+[4]: https://symfony.com/doc/current/setup/symfony_server.html#enabling-tls
+[5]: https://symfony.com/doc/current/setup.html#security-checker
+[6]: https://symfony.com/cloud
+[7]: https://symfony.com/download
+[8]: https://github.com/SigStore/cosign
+[9]: https://www.sigstore.dev/
+[10]: https://github.com/sigstore/cosign/blob/main/KEYLESS.md
+[11]: https://symfony.com/security

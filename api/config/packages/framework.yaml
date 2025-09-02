@@ -8,6 +8,11 @@ framework:
     #esi: true
     #fragments: true
 
+    form:
+        # Remove the legacy_error_message line
+        csrf_protection: true
+        enabled: true
+
 when@test:
     framework:
         test: true
